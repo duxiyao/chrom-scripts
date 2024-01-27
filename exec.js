@@ -1,14 +1,89 @@
 console.log('exec js');
+//https://blog.csdn.net/dfc_dfc/article/details/132261116   前端请求大比拼：Fetch、Axios、Ajax、XHR
+/*
+(function () {
+	const { fetch: originalFetch } = window;
+
+	window.fetch = async (...args) => {
+		let [resource, config ] = args;
+			console.log('resource:', resource);
+			console.log('config:', config);
+			console.log('args:', args);
+		// request interceptor here
+		const response = await originalFetch(resource, config);
+		// response interceptor here
+		return response;
+	};
+
+})();*/
+
+(function () {
+	
+	console.log('a');
+    let origFetch = window.fetch;
+    window.fetch = async function (...args) {
+		console.log('b');
+        const response = await origFetch(...args);
+        console.log('fetch request:', args);
+
+		/*
+        response
+            .clone()
+            .blob() // 此处需要根据不同数据调用不同方法，这里演示的是二进制大文件，比如音频
+            .then(data => {
+            	// 对于二进制大文件可以创建为URL(blob:开头)，供其它脚本访问
+            	//sessionStorage['wave'] = URL.createObjectURL(data); // 插件需要添加'storage'权限
+                //window.postMessage({ type: 'fetch', data: URL.createObjectURL(data) }, '*'); // send to content script
+            })
+            .catch(err => console.error(err));
+			*/
+        return response;
+    }
+	
+})();
+
+/*
+(function () {
+	console.log('a');
+	const { fetch: originalFetch } = window;
+	window.fetch = async (...args) => {
+		console.log('c');
+		let [resource, config ] = args;
+			console.log('resource:', resource);
+			console.log('config:', config);
+			console.log('args:', args);
+
+		// request interceptor starts
+		resource = 'https://jsonplaceholder.typicode.com/todos/2';
+		// request interceptor ends
+
+		const response = await originalFetch(resource, config);
+
+		console.log('d');
+		// response interceptor here
+		return response;
+	};
+
+	console.log('b');
+	
+	fetch('https://jsonplaceholder.typicode.com/todos/1')
+	.then((response) => response.json())
+	.then((json) => console.log(json));
+	console.log('d');
+})();
+*/
 
 
+//xhr start
 (function() {
 	console.log('function setRequestHeader');
     var originalSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
     XMLHttpRequest.prototype.setRequestHeader = function(k, v) {
 		var args = Array.prototype.slice.call(arguments)
-		console.log('args1='+args);
-		console.log('myargs='+this.myargs);
-		console.log('myurl='+this.myurl);
+		//console.log('args1='+args);
+		//console.log('myargs='+this.myargs);
+		//console.log('myurl='+this.myurl);
+		
         //console.log('Original k=', k);
         //console.log('Original v=', v);
         
@@ -39,6 +114,7 @@ console.log('exec js');
         return originalOpen.apply(this, arguments);
     };
 })();
+//xhr end
 
 //console.log('domain='+document.cookie);
 //let test = 'test tun';
