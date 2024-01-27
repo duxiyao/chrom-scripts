@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "My Extension",
+  "version": "0.0.1",
+  "description": "content_scripts",
+  "author": "tuntun",
+	"background": {
+		"service_worker": "background.js"
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"*://mms.pinduoduo.com/*"
+			],
+			"js": [
+				"content-script.js"
+			],
+			"css": [
+				"insert-css.css"
+			]
+		}
+	],
+	"host_permissions": [
+		"http://*/*",
+		"https://*/*"
+	],
+	"permissions": [
+		"scripting",
+		"tabs",
+		"activeTab"
+	],
+	"action": {
+		"default_icon": {
+			"16": "img/icon.png",
+			"32": "img/icon.png",
+			"48": "img/icon.png",
+			"64": "img/icon.png",
+			"128": "img/icon.png"
+		}
+	},
+	"icons": {
+		"16": "img/icon.png",
+		"32": "img/icon.png",
+		"48": "img/icon.png",
+		"64": "img/icon.png",
+		"128": "img/icon.png"
+	}
+}
