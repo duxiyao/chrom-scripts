@@ -1,7 +1,61 @@
+chrome.tabs.onActivated.addListener(function(activeInfo){
+	
+			console.log('onActivated->'+JSON.stringify(activeInfo));
+			chrome.tabs.get(
+			  activeInfo.tabId,
+			  function(tab){
+				  
+				console.log('onActivated get->'+tab.url);
+			  }
+			)
+	
+});
+
+chrome.tabs.onUpdated.addListener(function(tabId,changeInfo,tab){
+	
+	//if( changeInfo.url == undefined){return false;}
+	
+		if (changeInfo.status == 'complete' && tab.active) { 
+			// do your things
+			console.log('onUpdated->'+tab.url);
+			/*
+			chrome.tabs.sendMessage(tabId,{type:'tabUpdate', tab:tab}, function(response)
+			{
+				console.log('来自content的回复：'+response);
+			});*/
+
+	    }
+		
+	// 检查是否是wish页面的tab
+	if (tab.url.startsWith('https://mms.pinduoduo.com/')) {
+		// 通知对应的tab页面url变化了,需要优化为离开立即移除，进入则加载完毕再添加
+		if (tab.status === 'loading'){
+		}
+	}
+});
+
+
+let registered = false
+
 chrome.action.onClicked.addListener(async (tab) => {
 	console.log(tab);
 	if (tab.url.startsWith('https://mms.pinduoduo.com/')) {
+		if(registered){return}
 		console.log('this is target page');
+		registered = true
+		
+		let aid=tab.id
+		console.log('aid='+aid);
+		
+		setInterval(function(){
+		 chrome.tabs.sendMessage(
+						aid,
+						{greeting: "hello"},
+						function(response) {
+								console.log(response.farewell);
+					});
+		}, 3000);
+
 		chrome.scripting.executeScript({
 		  target: {
 					tabId: tab.id,
