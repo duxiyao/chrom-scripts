@@ -18,28 +18,28 @@ console.log('exec js');
 })();*/
 
 (function () {
-	
-	console.log('a');
+
+    console.log('a');
     let origFetch = window.fetch;
     window.fetch = async function (...args) {
-		console.log('b');
+        console.log('b');
         const response = await origFetch(...args);
         console.log('fetch request:', args);
 
-		/*
+        /*
         response
             .clone()
             .blob() // 此处需要根据不同数据调用不同方法，这里演示的是二进制大文件，比如音频
             .then(data => {
-            	// 对于二进制大文件可以创建为URL(blob:开头)，供其它脚本访问
-            	//sessionStorage['wave'] = URL.createObjectURL(data); // 插件需要添加'storage'权限
+                // 对于二进制大文件可以创建为URL(blob:开头)，供其它脚本访问
+                //sessionStorage['wave'] = URL.createObjectURL(data); // 插件需要添加'storage'权限
                 //window.postMessage({ type: 'fetch', data: URL.createObjectURL(data) }, '*'); // send to content script
             })
             .catch(err => console.error(err));
-			*/
+            */
         return response;
     }
-	
+
 })();
 
 /*
@@ -75,41 +75,41 @@ console.log('exec js');
 
 
 //xhr start
-(function() {
-	console.log('function setRequestHeader');
+(function () {
+    console.log('function setRequestHeader');
     var originalSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
-    XMLHttpRequest.prototype.setRequestHeader = function(k, v) {
-		var args = Array.prototype.slice.call(arguments)
-		//console.log('args1='+args);
-		//console.log('myargs='+this.myargs);
-		//console.log('myurl='+this.myurl);
-		
+    XMLHttpRequest.prototype.setRequestHeader = function (k, v) {
+        var args = Array.prototype.slice.call(arguments)
+        //console.log('args1='+args);
+        //console.log('myargs='+this.myargs);
+        //console.log('myurl='+this.myurl);
+
         //console.log('Original k=', k);
         //console.log('Original v=', v);
-        
+
         // 修改请求头信息
         //this.setRequestHeader('X-My-Header', 'My value');
-        
+
         // 返回原始的open方法，以便发起请求
         return originalSetRequestHeader.apply(this, arguments);
     };
 })();
 
 
-(function() {
-	console.log('function open');
+(function () {
+    console.log('function open');
     var originalOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
-		var args = Array.prototype.slice.call(arguments)
-		this.myargs=args;
-		this.myurl=url
-		//console.log('args2='+args);
+    XMLHttpRequest.prototype.open = function (method, url, async, user, pass) {
+        var args = Array.prototype.slice.call(arguments)
+        this.myargs = args;
+        this.myurl = url
+        //console.log('args2='+args);
         // 打印原始请求头信息  无效
         //console.log('Original request headers:', this.requestHeaders);
-        
+
         // 修改请求头信息
         //this.setRequestHeader('X-My-Header', 'My value');
-        
+
         // 返回原始的open方法，以便发起请求
         return originalOpen.apply(this, arguments);
     };
