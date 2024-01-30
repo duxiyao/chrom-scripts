@@ -1,43 +1,138 @@
-chrome.tabs.onActivated.addListener(function (activeInfo) {
+let cookiesText = '';
 
-    console.log('onActivated->' + JSON.stringify(activeInfo));
-    chrome.tabs.get(
-        activeInfo.tabId,
-        function (tab) {
+function attachCurTab(tab) {
+    // console.log('attachCurTab->' + tab.url);
+    var currentTab = tab;
+    var version = "1.3";
+    var requestMethod = '';
 
-            console.log('onActivated get->' + tab.url);
+
+    try {
+        chrome.debugger.detach({
+            tabId: tab.id
+        });
+    } catch (e) {
+    }
+    chrome.debugger.attach({ //debug·at·current ·tab
+        tabId: tab.id
+    }, version, onAttach.bind(null, tab.id));
+
+
+    function onAttach(tabId) {
+        //，发送命令，向指定tab开启网络功能
+        chrome.debugger.sendCommand({ //first enable ·the·Network
+            tabId: tabId
+        }, "Network.enable");
+        //chrome调试器监听事件，捕获网络请求核响应相关事件
+        chrome.debugger.onEvent.addListener(allEventHandler);
+    }
+
+    async function allEventHandler(debuggeeId, message, params) {
+        if (currentTab.id !== debuggeeId.tabId) {
+            return;
         }
-    )
+        if (currentTab?.url?.startsWith("chrome://")) return;
 
-});
+        //·功能我只做了一个fetch类型请求的拦截
+        if (params.type === 'Fetch') {
+            //console.log('message='+message);
+            //·message里面的信息我理解为一个完整网络请求的生命周期
+            if (message === 'Network.requestWillBeSent') {
+                requestMethod = params?.request?.method;
+                // if (params?.request?.url.indexOf('queryGoodsEvaluateVO') > -1)
+                //     console.log('params?.request?=' + JSON.stringify(params?.request));
+                let ck = ''
+                chrome.cookies.getAll({url: params?.request?.url}, function (cookies) {
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = cookies[i];
+                        ck += cookie.name + '=' + cookie.value + (i < cookies.length - 1 ? '; ' : '');
+                    }
+                    console.log('ck=' + ck);
+
+                    deal(ck, currentTab, params)
+                })
+            }
+            if (message === "Network.responseReceived") { //response ·return
+                const response = await new Promise(resolve => {
+                    chrome.debugger.sendCommand({
+                        tabId: debuggeeId.tabId
+                    }, "Network.getResponseBody", {
+                        "requestId": params.requestId
+                    }, resolve);
+                });
+                if (response?.body) {
+                    //console.log(`${requestMethod} - ${params.response.url} :  `, response.body);
+                    requestMethod = ''
+                }
+            }
+        }
+    }
+}
+
+function deal(ck, tab, params) {
+    if (params?.request?.url.indexOf('activity/stats') > -1) { //营销工具-评价有礼
+        // console.log('params?.request?=' + JSON.stringify(params?.request));
+        let tabId = tab.id
+        chrome.tabs.sendMessage(
+            tabId,
+            {
+                type: "activitystats",
+                activityId: JSON.parse(params?.request?.postData)?.activityId,
+                // ua: params?.request?.headers?.User-Agent,
+                ck: ck
+            },
+            function (response) {
+                // console.log(response.farewell);
+            });
+    }
+    if (params?.request?.url.indexOf('queryGoodsEvaluateVO') > -1) {//评价数据-商品评价
+        // console.log('params?.request?=' + JSON.stringify(params?.request));
+        // console.log('params?.request?.postData=' + JSON.stringify(params?.request?.postData));
+        // console.log('params?.request?.postData?.crawlerInfo=' + JSON.parse(params?.request?.postData)?.crawlerInfo);
+        // chrome.storage.local.set({ crawlerInfo: params?.request?.postData?.crawlerInfo }).then(() => {
+        //     console.log("Value is set");
+        // });
+        let tabId = tab.id
+        chrome.tabs.sendMessage(
+            tabId,
+            {
+                type: "queryGoodsEvaluateVO",
+                crawlerInfo: JSON.parse(params?.request?.postData)?.crawlerInfo,
+                // ua: params?.request?.headers?.User-Agent,
+                ck: ck
+            },
+            function (response) {
+                // console.log(response.farewell);
+            });
+    }
+}
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 
-    //if( changeInfo.url == undefined){return false;}
-
+    if (tab.active) {
+        // console.log('onUpdated-> changeInfo.status =' + changeInfo.status)
+        attachCurTab(tab)
+    }
     if (changeInfo.status == 'complete' && tab.active) {
-        // do your things
-        console.log('onUpdated->' + tab.url);
+        // console.log('onUpdated->' + tab.url);
         /*
         chrome.tabs.sendMessage(tabId,{type:'tabUpdate', tab:tab}, function(response)
         {
             console.log('来自content的回复：'+response);
         });*/
-
     }
 
     // 检查是否是wish页面的tab
     if (tab.url.startsWith('https://mms.pinduoduo.com/')) {
-        // 通知对应的tab页面url变化了,需要优化为离开立即移除，进入则加载完毕再添加
         if (tab.status === 'loading') {
         }
     }
 });
 
-
 let registered = false
 
 chrome.action.onClicked.addListener(async (tab) => {
+    if (true) return
     console.log(tab);
     if (tab.url.startsWith('https://mms.pinduoduo.com/')) {
         if (registered) {

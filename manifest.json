@@ -29,6 +29,7 @@
     "tabs",
     "activeTab",
     "cookies",
+    "storage",
     "debugger"
   ],
   "action": {
