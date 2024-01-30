@@ -33,7 +33,7 @@ function activitystats(request, sender, sendResponse) {
             a.innerText = '下载'
             a.addEventListener("click", function () {
                 // window.open('https://cn.bing.com/', "_blank")
-                window.open('http://localhost:10000/yangyun/reqList?ck=' + encodeURI(request.ck) + "&type=1" + "&activityId=" + request.activityId, "_blank")
+                window.open('http://localhost:10000/yangyun/reqList?ck=' + request.ck + "&type=1" + "&activityId=" + request.activityId, "_blank")
             });
             document.getElementsByClassName('MmsUiBlockTitle___title___2C-H-2-36-0')[i].appendChild(a)
         }
@@ -60,7 +60,7 @@ function queryGoodsEvaluateVO(request, sender, sendResponse) {
             a.addEventListener("click", function () {
                 // window.open('https://cn.bing.com/', "_blank")
                 // window.open('http://localhost:10000/yangyun/reqList?ck=' + request.ck + "&ua=" + request.ua + "&type=0" + "&crawlerInfo=" + request.crawlerInfo, "_blank")
-                window.open('http://localhost:10000/yangyun/reqList?ck=' + encodeURI(request.ck) + "&type=0" + "&crawlerInfo=" + encodeURI(request.crawlerInfo), "_blank")
+                window.open('http://localhost:10000/yangyun/reqList?ck=' + request.ck + "&type=0" + "&crawlerInfo=" + request.crawlerInfo, "_blank")
             });
             document.getElementsByClassName('MmsUiBlockTitle___wrapper___3kcbt2-19-0 MmsUiBlockTitle___wide-screen___104AM2-19-0')[i].firstChild.appendChild(a)
         }

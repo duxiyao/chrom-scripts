@@ -49,7 +49,7 @@ function attachCurTab(tab) {
                     }
                     console.log('ck=' + ck);
 
-                    deal(ck, currentTab, params)
+                    deal(encodeURIComponent(ck), currentTab, params)
                 })
             }
             if (message === "Network.responseReceived") { //response ·return
