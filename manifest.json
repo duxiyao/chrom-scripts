@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "My Extension",
+  "name": "yy_work",
   "version": "0.0.1",
-  "description": "content_scripts",
+  "description": "yy_work",
   "author": "tuntun",
   "background": {
     "service_worker": "background.js"
