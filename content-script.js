@@ -8,6 +8,12 @@ chrome.runtime.onMessage.addListener(
         //     "from a content script:" + sender.tab.url :
         //     "from the extension");
 
+        if (request.type == "goodsList") {
+            typeof(goodsList) == 'function' && goodsList(request, sender, sendResponse);
+        }
+        if (request.type == "query_promotion_event_list_by_goods") {
+            typeof(query_promotion_event_list_by_goods) == 'function' && query_promotion_event_list_by_goods(request, sender, sendResponse);
+        }
         if (request.type == "queryGoodsEvaluateVO") {
             typeof(queryGoodsEvaluateVO) == 'function' && queryGoodsEvaluateVO(request, sender, sendResponse);
         }
@@ -17,13 +23,53 @@ chrome.runtime.onMessage.addListener(
         return true
     });
 
+//商品管理-商品列表
+function goodsList(request, sender, sendResponse) {
+    if (addedList.indexOf('goodsList') > -1) {
+        return
+    }
+    addedList += 'goodsList,'
+    console.log('goodsList->' + request.ac)
+
+    let es =document.getElementsByClassName('TAB_lineLabel_5-106-0 TAB_lineLabel_5-106-0 TAB_active_5-106-0 TAB_lineLabelActive_5-106-0 MmsUiPrimaryTab___lineLabelActive___aav3Y2-48-0')
+    for (let i = 0; i <es .length; i++) {
+        if (es[i].innerText.indexOf('全部') > -1) {
+            const a = document.createElement('a')
+            a.innerText = '下载'
+            a.addEventListener("click", function () {
+                // window.open('http://localhost:10000/yangyun/reqList?ck=' + request.ck + "&type=1" + "&activityId=" + request.activityId, "_blank")
+            });
+            es[i].firstChild.appendChild(a)
+            break
+        }
+    }
+}
+//营销工具-新客立减
+function query_promotion_event_list_by_goods(request, sender, sendResponse) {
+    if (addedList.indexOf('query_promotion_event_list_by_goods') > -1) {
+        return
+    }
+    addedList += 'query_promotion_event_list_by_goods,'
+
+    for (let i = 0; i < document.getElementsByClassName('TAB_active_5-81-0 MmsUiSecondaryTab___active___3-4wO2-36-0').length; i++) {
+        if (document.getElementsByClassName('TAB_active_5-81-0 MmsUiSecondaryTab___active___3-4wO2-36-0')[i].innerText.indexOf('活动商品') > -1) {
+            const a = document.createElement('a')
+            a.innerText = '下载'
+            a.addEventListener("click", function () {
+                // window.open('http://localhost:10000/yangyun/reqList?ck=' + request.ck + "&type=1" + "&activityId=" + request.activityId, "_blank")
+            });
+            document.getElementsByClassName('TAB_active_5-81-0 MmsUiSecondaryTab___active___3-4wO2-36-0')[i].appendChild(a)
+            break
+        }
+    }
+}
 //营销工具-评价有礼
 function activitystats(request, sender, sendResponse) {
     if (addedList.indexOf('activitystats') > -1) {
         return
     }
     addedList += 'activitystats,'
-    console.log('activitystats->' + request.activityId)
+    // console.log('activitystats->' + request.activityId)
     // console.log('activitystats->' + JSON.stringify(request))
     // sendResponse({farewell: "receive activitystats"});
 

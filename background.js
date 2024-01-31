@@ -33,6 +33,7 @@ function attachCurTab(tab) {
         }
         if (currentTab?.url?.startsWith("chrome://")) return;
 
+        // console.log('params.type-》' + params.type)
         //·功能我只做了一个fetch类型请求的拦截
         if (params.type === 'Fetch') {
             //console.log('message='+message);
@@ -70,6 +71,34 @@ function attachCurTab(tab) {
 }
 
 function deal(ck, tab, params) {
+    if (params?.request?.url.indexOf('goodsList') > -1) { //商品管理-商品列表
+        // console.log('params?.request?=' + JSON.stringify(params?.request));
+        let tabId = tab.id
+        chrome.tabs.sendMessage(
+            tabId,
+            {
+                type: "goodsList",
+                ua: params?.request?.headers['User-Agent'],
+                ac: params?.request?.headers['Anti-Content'],
+                ck: ck
+            },
+            function (response) {
+                // console.log(response.farewell);
+            });
+    }
+    if (params?.request?.url.indexOf('query_promotion_event_list_by_goods') > -1) { //营销工具-新客立减
+        // console.log('params?.request?=' + JSON.stringify(params?.request));
+        let tabId = tab.id
+        chrome.tabs.sendMessage(
+            tabId,
+            {
+                type: "query_promotion_event_list_by_goods",
+                ck: ck
+            },
+            function (response) {
+                // console.log(response.farewell);
+            });
+    }
     if (params?.request?.url.indexOf('activity/stats') > -1) { //营销工具-评价有礼
         // console.log('params?.request?=' + JSON.stringify(params?.request));
         let tabId = tab.id
