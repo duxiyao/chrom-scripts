@@ -1,4 +1,5 @@
 let cookiesText = '';
+var interceptReq = '';
 
 function attachCurTab(tab) {
     // console.log('attachCurTab->' + tab.url);
@@ -6,16 +7,19 @@ function attachCurTab(tab) {
     var version = "1.3";
     var requestMethod = '';
 
-
+/*
     try {
         chrome.debugger.detach({
             tabId: tab.id
         });
     } catch (e) {
+    }*/
+	try{
+		chrome.debugger.attach({ //debug·at·current ·tab
+			tabId: tab.id
+		}, version, onAttach.bind(null, tab.id));
+	}catch (e) {
     }
-    chrome.debugger.attach({ //debug·at·current ·tab
-        tabId: tab.id
-    }, version, onAttach.bind(null, tab.id));
 
 
     function onAttach(tabId) {
@@ -40,17 +44,19 @@ function attachCurTab(tab) {
             //·message里面的信息我理解为一个完整网络请求的生命周期
             if (message === 'Network.requestWillBeSent') {
                 requestMethod = params?.request?.method;
+				interceptMyReq(params)
                 // if (params?.request?.url.indexOf('queryGoodsEvaluateVO') > -1)
-                //     console.log('params?.request?=' + JSON.stringify(params?.request));
+				//interceptReq = 	JSON.stringify(params?.request)
+                //console.log('params?.request?=' + JSON.stringify(params?.request));
                 let ck = ''
                 chrome.cookies.getAll({url: params?.request?.url}, function (cookies) {
                     for (var i = 0; i < cookies.length; i++) {
                         var cookie = cookies[i];
                         ck += cookie.name + '=' + cookie.value + (i < cookies.length - 1 ? '; ' : '');
                     }
-                    console.log('ck=' + ck);
+                    //console.log('ck=' + ck);
 
-                    deal(encodeURIComponent(ck), currentTab, params)
+                    //deal(encodeURIComponent(ck), currentTab, params)
                 })
             }
             if (message === "Network.responseReceived") { //response ·return
@@ -62,12 +68,51 @@ function attachCurTab(tab) {
                     }, resolve);
                 });
                 if (response?.body) {
+					
+					let interceptResp = response.body
                     //console.log(`${requestMethod} - ${params.response.url} :  `, response.body);
+					
+					dealIntercept(currentTab,interceptResp,params);
                     requestMethod = ''
                 }
             }
         }
     }
+}
+
+function isTargetUrl(url){
+	return url.indexOf('/vodka/v2/mms/query/display/mall/goodsList')>-1
+}
+
+function interceptMyReq(params){
+	if (isTargetUrl(params?.request?.url)){
+		//console.log('interceptMyReq------------ url='+params?.request?.url)
+		interceptReq = 	JSON.stringify(params?.request)
+		//console.log('interceptMyReq------------ interceptReq='+interceptReq)
+	}
+}
+
+function dealIntercept(tab,interceptResp,params){
+	//console.log('dealIntercept------------')
+	if(isTargetUrl(params.response.url)){
+		console.log('dealIntercept--- url='+params.response.url)
+		console.log('dealIntercept--- interceptReq='+interceptReq)
+		console.log('dealIntercept--- interceptResp='+interceptResp)
+		
+		let tabId = tab.id
+        chrome.tabs.sendMessage(
+            tabId,
+            {
+                type: "saveTextToFile",
+				data:interceptResp
+                //ua: params?.request?.headers['User-Agent'],
+                //ac: params?.request?.headers['Anti-Content'],
+                //ck: ck
+            },
+            function (response) {
+                // console.log(response.farewell);
+            });
+	}
 }
 
 function deal(ck, tab, params) {
@@ -139,23 +184,43 @@ function deal(ck, tab, params) {
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 
     if (tab.active) {
-        // console.log('onUpdated-> changeInfo.status =' + changeInfo.status)
-        attachCurTab(tab)
+        console.log('onUpdated-> changeInfo.status =' + changeInfo.status)
+		if (tab.url.startsWith('https://mms.pinduoduo.com/')) {
+			if (registered) {
+				console.log('already registered');
+				return
+			}
+			attachCurTab(tab)
+			
+			console.log('this is target page registered');
+			registered = true
+		}
     }
     if (changeInfo.status == 'complete' && tab.active) {
-        // console.log('onUpdated->' + tab.url);
+        console.log('onUpdated->' + tab.url);
         /*
         chrome.tabs.sendMessage(tabId,{type:'tabUpdate', tab:tab}, function(response)
         {
             console.log('来自content的回复：'+response);
         });*/
+		
+		if (tab.url.startsWith('https://mms.pinduoduo.com/')) {
+			if (registered) {
+				console.log('already registered');
+				return
+			}
+			attachCurTab(tab)
+			
+			console.log('this is target page registered');
+			registered = true
+		}
     }
-
+/*
     // 检查是否是wish页面的tab
     if (tab.url.startsWith('https://mms.pinduoduo.com/')) {
         if (tab.status === 'loading') {
         }
-    }
+    }*/
 });
 
 let registered = false
@@ -302,3 +367,4 @@ chrome.action.onClicked.addListener(async (tab) => {
 
 
 });
+

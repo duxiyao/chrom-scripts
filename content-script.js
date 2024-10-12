@@ -20,6 +20,10 @@ chrome.runtime.onMessage.addListener(
         if (request.type == "activitystats") {
             typeof(activitystats) == 'function' && activitystats(request, sender, sendResponse);
         }
+		
+        if (request.type == "saveTextToFile") {
+			saveTextToFile(request.data,'txt1')
+        }
         return true
     });
 
@@ -114,3 +118,13 @@ function queryGoodsEvaluateVO(request, sender, sendResponse) {
 }
 
 console.log(document.querySelector('.s-top-img-wrapper img')?.src);
+
+function saveTextToFile(text, fileName) {
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
