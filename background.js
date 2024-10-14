@@ -368,3 +368,31 @@ chrome.action.onClicked.addListener(async (tab) => {
 
 });
 
+
+//const timeoutDuration = 500; // 超时时间，单位为毫秒
+//const { targetLanguage, triggerFlag } = response.simpleMode;
+//const text = request.content.replace(triggerFlag, '');
+//const apiUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLanguage}&dt=t&q=${encodeURIComponent(text)}`;
+const apiUrl = `http://resume.dancecode.cn:10000/yangyun/getcds`;
+const fetchPromise = fetch(apiUrl)
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+    })
+    .catch(error => {
+        console.log(error);
+    });
+	
+	
+let formData = new FormData();
+formData.append('code', '345852');
+
+fetch('http://resume.dancecode.cn:10000/yangyun/getck', {
+    method: 'POST',
+    body: formData
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch((error) => {
+    console.error('Error:', error);
+});	
