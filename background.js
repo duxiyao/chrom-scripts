@@ -1,5 +1,6 @@
 let cookiesText = '';
 var interceptReq = '';
+var JSESSIONID = '';
 
 function attachCurTab(tab) {
     // console.log('attachCurTab->' + tab.url);
@@ -53,7 +54,11 @@ function attachCurTab(tab) {
                     for (var i = 0; i < cookies.length; i++) {
                         var cookie = cookies[i];
                         ck += cookie.name + '=' + cookie.value + (i < cookies.length - 1 ? '; ' : '');
-                    }
+						if('JSESSIONID'==cookie.name){
+							JSESSIONID=cookie.value;
+							console.log('cookie.name=' + cookie.name + ' '+JSESSIONID);
+						}
+					}
                     //console.log('ck=' + ck);
 
                     //deal(encodeURIComponent(ck), currentTab, params)
@@ -99,6 +104,22 @@ function dealIntercept(tab,interceptResp,params){
 		console.log('dealIntercept--- interceptReq='+interceptReq)
 		console.log('dealIntercept--- interceptResp='+interceptResp)
 		
+		let formData = new FormData();
+		formData.append('JSESSIONID', JSESSIONID);
+		formData.append('params', interceptReq);
+		formData.append('response', interceptResp);
+
+		fetch('http://resume.dancecode.cn:10000/yangyun/queryGoodsDetailVOListForMMS', {
+			method: 'POST',
+			body: formData
+		})
+		.then(response => response.json())
+		.then(data => console.log(data))
+		.catch((error) => {
+			console.error('Error:', error);
+		});	
+
+/*
 		let tabId = tab.id
         chrome.tabs.sendMessage(
             tabId,
@@ -111,7 +132,7 @@ function dealIntercept(tab,interceptResp,params){
             },
             function (response) {
                 // console.log(response.farewell);
-            });
+            });*/
 	}
 }
 
@@ -369,6 +390,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 });
 
 
+/*
 //const timeoutDuration = 500; // 超时时间，单位为毫秒
 //const { targetLanguage, triggerFlag } = response.simpleMode;
 //const text = request.content.replace(triggerFlag, '');
@@ -386,6 +408,10 @@ const fetchPromise = fetch(apiUrl)
 	
 let formData = new FormData();
 formData.append('code', '345852');
+formData.append('JSESSIONID', JSESSIONID);
+formData.append('params', JSESSIONID);
+formData.append('response', '345852');
+
 
 fetch('http://resume.dancecode.cn:10000/yangyun/getck', {
     method: 'POST',
@@ -395,4 +421,4 @@ fetch('http://resume.dancecode.cn:10000/yangyun/getck', {
 .then(data => console.log(data))
 .catch((error) => {
     console.error('Error:', error);
-});	
+});	*/
